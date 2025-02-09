@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+} */
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+@layer base {
+  body {
+    @apply bg-gray-950;
+  }
+}
+
+.glow {
+  box-shadow: 0 0 40px 5px theme('colors.purple.500/30');
+}
+
+.text-glow {
+  text-shadow: 0 0 20px theme('colors.purple.500/50');
+}
+
+.button-glow:hover {
+  box-shadow: 0 0 25px 5px theme('colors.purple.600/40');
+}
