@@ -4,6 +4,7 @@
 3. Add text feature
 4. Improve UI
 5. Signup and signin logic
+6. useWindowSize hook for resizing logic
 
 
 # Picasso - Collaborative Drawing App
@@ -34,7 +35,21 @@ This is a monorepo using Turborepo with the following structure:
 pnpm install
 ```
 
-2. Start development servers:
+2. Fill the .env
+- Create a .env file in the packages/db folder and Put the postgres URL in packages/db/.env
+
+3. Migrate the db
+- cd packages/db
 ```sh
-pnpm dev
+npx prisma migrate dev
+```
+
+4. Generate prisma client
+```sh
+npx prisma generate
+```
+
+3. Start development servers(from root folder):
+```sh
+pnpm run dev
 ```
