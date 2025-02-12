@@ -7,6 +7,7 @@
 6. useWindowSize hook for resizing logic
 
 
+
 # Picasso - Collaborative Drawing App
 
 A real-time collaborative drawing application built with Next.js and WebSocket.
