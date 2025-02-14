@@ -1,3 +1,5 @@
+Currently after you zoom out or in, and then draw the shape, the shapes are moving from their place
+
 ### To DO
 1. Add more shapes
 2. Add pencil feature
