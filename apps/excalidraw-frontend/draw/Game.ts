@@ -1,6 +1,11 @@
 import { Tool } from "@/components/Canvas";
 import { getExistingShapes } from "./http";
 
+interface Coordinate {
+    x: number,
+    y: number
+}
+
 type Shape = {
     type: "rect";
     x: number;
@@ -14,10 +19,7 @@ type Shape = {
     radius: number;
 } | {
     type: "pencil";
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
+    points: Coordinate[];
 } | {
     type: "line";
     x1: number;
@@ -42,6 +44,7 @@ export class Game {
     private maxScale = 10;
     private isPanning = false;
     private panStart = { x: 0, y: 0 };
+    private currentPath: Coordinate[] = [];
     private translatePos = {
         x: 0,
         y: 0
@@ -81,7 +84,7 @@ export class Game {
         this.canvas.removeEventListener("click", this.mouseClickHandler)
     }
 
-    setTool(tool: "circle" | "pencil" | "rect" | "line" | "zoomIn" | "zoomOut"| "pan") {
+    setTool(tool: "circle" | "pencil" | "rect" | "line" | "zoomIn" | "zoomOut" | "pan") {
         this.selectedTool = tool;
     }
 
@@ -132,6 +135,34 @@ export class Game {
                 this.ctx.lineTo(shape.x2, shape.y2);
                 this.ctx.stroke();
                 this.ctx.closePath();
+            } else if (shape.type === "pencil") {
+                this.ctx.beginPath();
+                this.ctx.lineJoin = 'round';
+                this.ctx.lineCap = 'round';
+                this.ctx.lineWidth = 2;
+
+                if (shape.points.length > 2) {
+                    this.ctx.moveTo(shape.points[0].x, shape.points[0].y);
+                    for (let i = 1; i < shape.points.length - 2; i++) {
+                        const xc = (shape.points[i].x + shape.points[i + 1].x) / 2;
+                        const yc = (shape.points[i].y + shape.points[i + 1].y) / 2;
+                        this.ctx.quadraticCurveTo(
+                            shape.points[i].x,
+                            shape.points[i].y,
+                            xc,
+                            yc
+                        );
+                    }
+
+                    const last = shape.points.length - 1;
+                    this.ctx.quadraticCurveTo(
+                        shape.points[last - 1].x,
+                        shape.points[last - 1].y,
+                        shape.points[last].x,
+                        shape.points[last].y
+                    );
+                }
+                this.ctx.stroke();
             }
         })
 
@@ -144,7 +175,13 @@ export class Game {
             this.panStart.x = e.clientX;
             this.panStart.y = e.clientY;
             this.canvas.style.cursor = "grabbing"
+        } else if (this.selectedTool === "pencil") {
+            console.log("pencil down");
+            this.clicked = true
+            const transformed = this.getTransformedPoint(e.clientX, e.clientY);
+            this.currentPath = [{ x: transformed.x, y: transformed.y }];
         } else {
+
             this.clicked = true
             const transformed = this.getTransformedPoint(e.clientX, e.clientY);
             this.startX = transformed.x;
@@ -157,6 +194,7 @@ export class Game {
             this.canvas.style.cursor = "grab";
         } else {
             this.clicked = false
+
             const transformed = this.getTransformedPoint(e.clientX, e.clientY);
             const width = transformed.x - this.startX;
             const height = transformed.y - this.startY;
@@ -192,6 +230,11 @@ export class Game {
                 }
                 console.log("Line shape", shape);
 
+            } else if (this.selectedTool === "pencil" && this.currentPath.length > 0) {
+                shape = {
+                    type: "pencil",
+                    points: [...this.currentPath]
+                };
             }
 
             if (!shape) {
@@ -206,11 +249,12 @@ export class Game {
                     shape
                 }),
                 roomId: this.roomId
-            }))
+            }));
+            this.currentPath = [];
         }
 
     }
-    mouseMoveHandler = (e) => {
+    mouseMoveHandler = (e: MouseEvent) => {
         if (this.isPanning) {
             const dx = e.clientX - this.panStart.x;
             const dy = e.clientY - this.panStart.y;
@@ -222,6 +266,8 @@ export class Game {
             this.panStart.y = e.clientY;
             this.clearCanvas();
         }
+
+
         if (this.clicked) {
             const transformed = this.getTransformedPoint(e.clientX, e.clientY);
             this.clearCanvas();
@@ -232,28 +278,83 @@ export class Game {
             // Apply current transformations
             this.ctx.translate(this.translatePos.x, this.translatePos.y);
             this.ctx.scale(this.scale, this.scale);
-
-            const width = transformed.x - this.startX;
-            const height = transformed.y - this.startY;
             this.ctx.strokeStyle = "rgba(255, 255, 255)"
+            if (this.selectedTool === "pencil") {
+                if (this.currentPath.length > 0) {
 
-            if (this.selectedTool === "rect") {
-                this.ctx.strokeRect(this.startX, this.startY, width, height);
-            } else if (this.selectedTool === "circle") {
-                // ... existing circle code ...
-                const radius = Math.max(width, height) / 2;
-                const centerX = this.startX + radius;
-                const centerY = this.startY + radius;
+                    const lastPoint = this.currentPath[this.currentPath.length - 1];
+                    const dx = transformed.x - lastPoint.x;
+                    const dy = transformed.y - lastPoint.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance > 2) {
+                        const steps = Math.floor(distance / 2);
+                        for (let i = 1; i < steps; i++) {
+                            this.currentPath.push({
+                                x: lastPoint.x + (dx * i) / steps,
+                                y: lastPoint.y + (dy * i) / steps,
+                            });
+                        }
+                    }
+                }
+
+                this.currentPath.push({ x: transformed.x, y: transformed.y });
                 this.ctx.beginPath();
-                this.ctx.arc(centerX, centerY, Math.abs(radius), 0, Math.PI * 2);
+                this.ctx.lineCap = 'round';
+                this.ctx.lineJoin = 'round';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeStyle = "rgba(255, 255, 255)"
+                if (this.currentPath.length > 2) {
+                    this.ctx.moveTo(this.currentPath[0].x, this.currentPath[0].y);
+                    for (let i = 1; i < this.currentPath.length - 2; i++) {
+                        const xc = (this.currentPath[i].x + this.currentPath[i + 1].x) / 2;
+                        const yc = (this.currentPath[i].y + this.currentPath[i + 1].y) / 2;
+                        this.ctx.quadraticCurveTo(
+                            this.currentPath[i].x,
+                            this.currentPath[i].y,
+                            xc,
+                            yc
+
+                        );
+                    }
+
+                    if (this.currentPath.length > 2) {
+                        const last = this.currentPath.length - 1;
+                        this.ctx.quadraticCurveTo(
+                            this.currentPath[last - 1].x,
+                            this.currentPath[last - 1].y,
+                            this.currentPath[last].x,
+                            this.currentPath[last].y
+
+                        );
+                    }
+                }
+
                 this.ctx.stroke();
-                this.ctx.closePath();
-            } else if (this.selectedTool === "line") {
-                this.ctx.beginPath();
-                this.ctx.moveTo(this.startX, this.startY);
-                this.ctx.lineTo(transformed.x, transformed.y);
-                this.ctx.stroke();
+            } else {
+                const width = transformed.x - this.startX;
+                const height = transformed.y - this.startY;
+
+
+                if (this.selectedTool === "rect") {
+                    this.ctx.strokeRect(this.startX, this.startY, width, height);
+                } else if (this.selectedTool === "circle") {
+                    // ... existing circle code ...
+                    const radius = Math.max(width, height) / 2;
+                    const centerX = this.startX + radius;
+                    const centerY = this.startY + radius;
+                    this.ctx.beginPath();
+                    this.ctx.arc(centerX, centerY, Math.abs(radius), 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    this.ctx.closePath();
+                } else if (this.selectedTool === "line") {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.startX, this.startY);
+                    this.ctx.lineTo(transformed.x, transformed.y);
+                    this.ctx.stroke();
+                }
             }
+
 
             // Restore context state
             this.ctx.restore();
