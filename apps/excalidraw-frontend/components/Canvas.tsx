@@ -1,11 +1,11 @@
 // import { initDraw } from "@/draw";
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
-import { Circle, Minus, Pencil, Plus, RectangleHorizontalIcon } from "lucide-react";
+import { Circle, Hand, Minus, Pencil, Plus, RectangleHorizontalIcon } from "lucide-react";
 import { Game } from "@/draw/Game";
 import Line from "./Icons/Line";
 
-export type Tool = "circle" | "rect" | "pencil" | "line" | "zoomIn" | "zoomOut";
+export type Tool = "circle" | "rect" | "pencil" | "line" | "zoomIn" | "zoomOut" | "pan";
 
 export function Canvas({ roomId, socket }: { roomId: string, socket: WebSocket }) {
 
@@ -56,7 +56,7 @@ export function Canvas({ roomId, socket }: { roomId: string, socket: WebSocket }
     // background: "red",
     overflow: "hidden"
   }}>
-    <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
+    <canvas style={{ cursor: selectedTool === "pan" ? "grab" : "default" }} ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
     <Topbar selectedTool={selectedTool} setSelectedTool={setSelectedTool} />
   </div>
 }
@@ -73,6 +73,7 @@ function Topbar({ selectedTool, setSelectedTool }: {
       <IconButton activated={selectedTool === "line"} icon={<Line />} onClick={() => { setSelectedTool("line") }}></IconButton>
       <IconButton activated={selectedTool === "zoomIn"} icon={<Plus />} onClick={() => { setSelectedTool("zoomIn") }}></IconButton>
       <IconButton activated={selectedTool === "zoomOut"} icon={<Minus />} onClick={() => { setSelectedTool("zoomOut") }}></IconButton>
+      <IconButton activated={selectedTool === "pan"} icon={<Hand />} onClick={() => { setSelectedTool("pan") }}></IconButton>
 
     </div>
 

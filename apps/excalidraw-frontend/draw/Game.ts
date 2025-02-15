@@ -40,6 +40,8 @@ export class Game {
     private scaleMultiplier = 0.8;
     private minScale = 0.1;
     private maxScale = 10;
+    private isPanning = false;
+    private panStart = { x: 0, y: 0 };
     private translatePos = {
         x: 0,
         y: 0
@@ -79,7 +81,7 @@ export class Game {
         this.canvas.removeEventListener("click", this.mouseClickHandler)
     }
 
-    setTool(tool: "circle" | "pencil" | "rect" | "line" | "zoomIn" | "zoomOut") {
+    setTool(tool: "circle" | "pencil" | "rect" | "line" | "zoomIn" | "zoomOut"| "pan") {
         this.selectedTool = tool;
     }
 
@@ -137,63 +139,89 @@ export class Game {
     }
 
     mouseDownHandler = (e) => {
-        this.clicked = true
-        const transformed = this.getTransformedPoint(e.clientX, e.clientY);
-        this.startX = transformed.x;
-        this.startY = transformed.y;
+        if (this.selectedTool === "pan") {
+            this.isPanning = true;
+            this.panStart.x = e.clientX;
+            this.panStart.y = e.clientY;
+            this.canvas.style.cursor = "grabbing"
+        } else {
+            this.clicked = true
+            const transformed = this.getTransformedPoint(e.clientX, e.clientY);
+            this.startX = transformed.x;
+            this.startY = transformed.y;
+        }
     }
     mouseUpHandler = (e) => {
-        this.clicked = false
-        const transformed = this.getTransformedPoint(e.clientX, e.clientY);
-        const width = transformed.x - this.startX;
-        const height = transformed.y - this.startY;
+        if (this.selectedTool === "pan") {
+            this.isPanning = false;
+            this.canvas.style.cursor = "grab";
+        } else {
+            this.clicked = false
+            const transformed = this.getTransformedPoint(e.clientX, e.clientY);
+            const width = transformed.x - this.startX;
+            const height = transformed.y - this.startY;
 
-        let shape: Shape | null = null;
-        if (this.selectedTool === "rect") {
 
-            shape = {
-                type: "rect",
-                x: this.startX,
-                y: this.startY,
-                height,
-                width
-            }
-        } else if (this.selectedTool === "circle") {
-            const radius = Math.max(width, height) / 2;
-            shape = {
-                type: "circle",
-                radius: radius,
-                centerX: this.startX + radius,
-                centerY: this.startY + radius,
-            }
-        } else if (this.selectedTool === "line") {
-            //add logic for line
-            shape = {
-                type: "line",
-                x1: this.startX,
-                y1: this.startY,
-                x2: transformed.x,
-                y2: transformed.y
-            }
-            console.log("Line shape", shape);
 
+            let shape: Shape | null = null;
+            if (this.selectedTool === "rect") {
+
+                shape = {
+                    type: "rect",
+                    x: this.startX,
+                    y: this.startY,
+                    height,
+                    width
+                }
+            } else if (this.selectedTool === "circle") {
+                const radius = Math.max(width, height) / 2;
+                shape = {
+                    type: "circle",
+                    radius: radius,
+                    centerX: this.startX + radius,
+                    centerY: this.startY + radius,
+                }
+            } else if (this.selectedTool === "line") {
+                //add logic for line
+                shape = {
+                    type: "line",
+                    x1: this.startX,
+                    y1: this.startY,
+                    x2: transformed.x,
+                    y2: transformed.y
+                }
+                console.log("Line shape", shape);
+
+            }
+
+            if (!shape) {
+                return;
+            }
+
+            this.existingShapes.push(shape);
+
+            this.socket.send(JSON.stringify({
+                type: "chat",
+                message: JSON.stringify({
+                    shape
+                }),
+                roomId: this.roomId
+            }))
         }
 
-        if (!shape) {
-            return;
-        }
-
-        this.existingShapes.push(shape);
-
-        this.socket.send(JSON.stringify({
-            type: "chat",
-            message: JSON.stringify({
-                shape
-            }),
-            roomId: this.roomId
-        }))
     }
     mouseMoveHandler = (e) => {
+        if (this.isPanning) {
+            const dx = e.clientX - this.panStart.x;
+            const dy = e.clientY - this.panStart.y;
+
+            this.translatePos.x += dx;
+            this.translatePos.y += dy;
+
+            this.panStart.x = e.clientX;
+            this.panStart.y = e.clientY;
+            this.clearCanvas();
+        }
         if (this.clicked) {
             const transformed = this.getTransformedPoint(e.clientX, e.clientY);
             this.clearCanvas();
