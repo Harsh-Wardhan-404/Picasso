@@ -45,11 +45,15 @@ export class Game {
         y: 0
     };
     private getTransformedPoint(x: number, y: number) {
-        return {
-            x: (x - this.translatePos.x) / this.scale,
-            y: (y - this.translatePos.y) / this.scale,
-        }
+        const rect = this.canvas.getBoundingClientRect();
+        const canvasX = x - rect.left;
+        const canvasY = y - rect.top;
 
+        // Remove translation and scale effects
+        return {
+            x: (canvasX - this.translatePos.x) / this.scale,
+            y: (canvasY - this.translatePos.y) / this.scale,
+        }
     }
 
     socket: WebSocket;
@@ -134,17 +138,18 @@ export class Game {
 
     mouseDownHandler = (e) => {
         this.clicked = true
-        this.startX = e.clientX
-        this.startY = e.clientY
+        const transformed = this.getTransformedPoint(e.clientX, e.clientY);
+        this.startX = transformed.x;
+        this.startY = transformed.y;
     }
     mouseUpHandler = (e) => {
         this.clicked = false
-        const width = e.clientX - this.startX;
-        const height = e.clientY - this.startY;
+        const transformed = this.getTransformedPoint(e.clientX, e.clientY);
+        const width = transformed.x - this.startX;
+        const height = transformed.y - this.startY;
 
-        const selectedTool = this.selectedTool;
         let shape: Shape | null = null;
-        if (selectedTool === "rect") {
+        if (this.selectedTool === "rect") {
 
             shape = {
                 type: "rect",
@@ -153,7 +158,7 @@ export class Game {
                 height,
                 width
             }
-        } else if (selectedTool === "circle") {
+        } else if (this.selectedTool === "circle") {
             const radius = Math.max(width, height) / 2;
             shape = {
                 type: "circle",
@@ -161,14 +166,14 @@ export class Game {
                 centerX: this.startX + radius,
                 centerY: this.startY + radius,
             }
-        } else if (selectedTool === "line") {
+        } else if (this.selectedTool === "line") {
             //add logic for line
             shape = {
                 type: "line",
                 x1: this.startX,
                 y1: this.startY,
-                x2: e.clientX,
-                y2: e.clientY
+                x2: transformed.x,
+                y2: transformed.y
             }
             console.log("Line shape", shape);
 
@@ -190,15 +195,24 @@ export class Game {
     }
     mouseMoveHandler = (e) => {
         if (this.clicked) {
-            const width = e.clientX - this.startX;
-            const height = e.clientY - this.startY;
+            const transformed = this.getTransformedPoint(e.clientX, e.clientY);
             this.clearCanvas();
+
+            // Save context state before drawing preview
+            this.ctx.save();
+
+            // Apply current transformations
+            this.ctx.translate(this.translatePos.x, this.translatePos.y);
+            this.ctx.scale(this.scale, this.scale);
+
+            const width = transformed.x - this.startX;
+            const height = transformed.y - this.startY;
             this.ctx.strokeStyle = "rgba(255, 255, 255)"
-            const selectedTool = this.selectedTool;
-            console.log(selectedTool)
-            if (selectedTool === "rect") {
+
+            if (this.selectedTool === "rect") {
                 this.ctx.strokeRect(this.startX, this.startY, width, height);
-            } else if (selectedTool === "circle") {
+            } else if (this.selectedTool === "circle") {
+                // ... existing circle code ...
                 const radius = Math.max(width, height) / 2;
                 const centerX = this.startX + radius;
                 const centerY = this.startY + radius;
@@ -206,12 +220,15 @@ export class Game {
                 this.ctx.arc(centerX, centerY, Math.abs(radius), 0, Math.PI * 2);
                 this.ctx.stroke();
                 this.ctx.closePath();
-            } else if (selectedTool === "line") {
+            } else if (this.selectedTool === "line") {
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.startX, this.startY);
-                this.ctx.lineTo(e.clientX, e.clientY)
-                this.ctx.stroke()
+                this.ctx.lineTo(transformed.x, transformed.y);
+                this.ctx.stroke();
             }
+
+            // Restore context state
+            this.ctx.restore();
         }
     }
 
@@ -239,8 +256,8 @@ export class Game {
         const newScale = Math.min(Math.max(this.scale * scaleFactor, this.minScale), this.maxScale);
 
         if (newScale !== this.scale) {
-            this.translatePos.x += mouseX * (1 - scaleFactor);
-            this.translatePos.y += mouseY * (1 - scaleFactor);
+            this.translatePos.x = mouseX - (mouseX - this.translatePos.x) * scaleFactor;
+            this.translatePos.y = mouseY - (mouseY - this.translatePos.y) * scaleFactor;
 
             this.scale = newScale;
             this.clearCanvas();
