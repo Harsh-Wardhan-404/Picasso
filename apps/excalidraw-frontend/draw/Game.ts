@@ -26,6 +26,13 @@ type Shape = {
     y1: number;
     x2: number;
     y2: number;
+} | {
+    type: "text";
+    x: number;
+    y: number;
+    content: string;
+    fontSize?: number;
+    fontFamily?: string;
 }
 
 export class Game {
@@ -43,6 +50,9 @@ export class Game {
     private minScale = 0.1;
     private maxScale = 10;
     private isPanning = false;
+    private isEditing = false;
+    private textInput: HTMLTextAreaElement | null = null;
+    private editingPosition = { x: 0, y: 0 };
     private panStart = { x: 0, y: 0 };
     private currentPath: Coordinate[] = [];
     private translatePos = {
@@ -82,6 +92,10 @@ export class Game {
 
         this.canvas.removeEventListener("mousemove", this.mouseMoveHandler)
         this.canvas.removeEventListener("click", this.mouseClickHandler)
+
+        if (this.textInput && this.textInput.parentNode) {
+            this.textInput.parentNode.removeChild(this.textInput);
+        }
     }
 
     setTool(tool: "circle" | "pencil" | "rect" | "line" | "zoomIn" | "zoomOut" | "pan") {
@@ -163,6 +177,22 @@ export class Game {
                     );
                 }
                 this.ctx.stroke();
+            } else if (shape.type === "text") {
+                this.ctx.save();
+
+                // Reset the scale to maintain text size
+                this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+                // Apply only translation, not scaling
+                this.ctx.translate(
+                    this.translatePos.x + shape.x * this.scale,
+                    this.translatePos.y + shape.y * this.scale
+                );
+                this.ctx.font = "18px Arial";
+                this.ctx.fillStyle = 'white';
+                this.ctx.textAlign = 'left';
+                this.ctx.textBaseline = 'top';
+                this.ctx.fillText(shape.content, 0, 0);
+                this.ctx.restore();
             }
         })
 
@@ -401,5 +431,69 @@ export class Game {
         this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
 
         this.canvas.addEventListener("click", this.mouseClickHandler);
+
+        this.canvas.addEventListener("dblclick", this.keyTapHandler);
+    }
+
+    keyTapHandler = (e: MouseEvent) => {
+        const transformed = this.getTransformedPoint(e.clientX, e.clientY);
+        this.editingPosition = transformed;
+
+        if (!this.textInput) {
+            this.textInput = document.createElement('textarea');
+            this.textInput.style.position = 'fixed';
+            this.textInput.style.background = 'transparent';
+            this.textInput.style.border = 'none';
+            this.textInput.style.outline = 'none';
+            this.textInput.style.color = 'white';
+            this.textInput.style.font = '18px Arial';
+            this.textInput.style.resize = 'none';
+            this.textInput.style.overflow = 'hidden';
+            this.textInput.style.padding = '0';
+            this.canvas.parentNode?.appendChild(this.textInput);
+        }
+
+        const rect = this.canvas.getBoundingClientRect();
+        const scaledX = this.translatePos.x + transformed.x * this.scale;
+        const scaledY = this.translatePos.y + transformed.y * this.scale;
+
+        this.textInput.style.left = `${scaledX + rect.left}px`;
+        this.textInput.style.top = `${scaledY + rect.top}px`;
+        this.textInput.style.display = 'block';
+        this.textInput.focus();
+
+        const finishEditing = () => {
+            if (this.textInput && this.textInput.value.trim()) {
+                const shape: Shape = {
+                    type: "text",
+                    x: this.editingPosition.x,
+                    y: this.editingPosition.y,
+                    content: this.textInput.value
+                };
+                this.existingShapes.push(shape);
+                this.socket.send(JSON.stringify({
+                    type: "chat",
+                    message: JSON.stringify({
+                        shape
+                    }),
+                    roomId: this.roomId
+                }));
+                if (this.textInput) {
+                    this.textInput.style.display = "none";
+                    this.textInput.value = "";
+                }
+
+            }
+        }
+
+        this.textInput.onblur = finishEditing;
+        this.textInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                finishEditing();
+            }
+        }
+
+        this.ctx.fillText('Hello World!', transformed.x, transformed.y);
     }
 }

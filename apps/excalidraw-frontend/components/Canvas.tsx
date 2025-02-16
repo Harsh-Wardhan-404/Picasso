@@ -10,7 +10,7 @@ export type Tool = "circle" | "rect" | "pencil" | "line" | "zoomIn" | "zoomOut" 
 export function Canvas({ roomId, socket }: { roomId: string, socket: WebSocket }) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedTool, setSelectedTool] = useState<Tool>("circle");
+  const [selectedTool, setSelectedTool] = useState<Tool>("pan");
   const [game, setGame] = useState<Game>();
   useEffect(() => {
     if (canvasRef.current) {
