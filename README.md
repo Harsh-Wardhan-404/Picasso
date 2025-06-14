@@ -1,13 +1,9 @@
 Currently after you zoom out or in, and then draw the shape, the shapes are moving from their place
 
 ### To DO
-1. Add more shapes
-2. Add pencil feature
-3. Add text feature
-4. Improve UI
-5. Signup and signin logic
-6. useWindowSize hook for resizing logic
-
+1. Change the jwt token which we have hardcoded, file - (/Users/harshwardhansaindane/projects/Picasso/apps/excalidraw-frontend/components/RoomCanvas.tsx)
+2. Set up proper auth
+3. fix janky stuff from whiteboard
 
 
 # Picasso - Collaborative Drawing App

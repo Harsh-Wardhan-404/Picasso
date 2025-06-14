@@ -1,11 +1,16 @@
+import { HeroScrollDemo } from '@/components/HeroScroll';
+import { PointerHighlightDemo } from '@/components/PointerHighlighter';
 import { Pencil, Share2, Users, Sparkles, Github } from 'lucide-react';
 import Link from 'next/link';
+
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
+      {/* <PointerHighlightDemo /> */}
+      <HeroScrollDemo />
+      {/* <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-purple-900/20 backdrop-blur-3xl"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
           <div className="text-center relative z-10">
@@ -33,7 +38,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Feature Preview */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 mb-32">
