@@ -1,12 +1,21 @@
 import { HeroScrollDemo } from '@/components/HeroScroll';
 import { PointerHighlightDemo } from '@/components/PointerHighlighter';
 import { Pencil, Share2, Users, Sparkles, Github } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      {/* <img src="/logo.png" alt="" /> */}
+      <Image
+        src="/logo.png"
+        alt="Picasso Logo"
+        width={150}
+        height={40}
+        className="h-10 w-auto"
+      />
       {/* Hero Section */}
       {/* <PointerHighlightDemo /> */}
       <HeroScrollDemo />
@@ -41,7 +50,7 @@ export default function Home() {
       </div> */}
 
       {/* Feature Preview */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 mb-32">
+      {/* <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 mb-32">
         <div className="bg-gray-900/80 backdrop-blur-lg rounded-2xl p-8 glow">
           <div className="aspect-video rounded-lg overflow-hidden">
             <img
@@ -51,7 +60,7 @@ export default function Home() {
             />
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Features Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
