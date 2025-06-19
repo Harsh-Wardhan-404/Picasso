@@ -39,7 +39,7 @@ export function NavbarDemo() {
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
             {/* <NavbarButton variant="secondary">Login</NavbarButton> */}
-            <NavbarButton variant="primary" href="/signin">Login</NavbarButton>
+            <NavbarButton variant="primary" href="/signup">Login</NavbarButton>
           </div>
         </NavBody>
 

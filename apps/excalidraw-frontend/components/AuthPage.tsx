@@ -3,27 +3,75 @@ import React, { useEffect, useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { cn } from "@/libs/utils"
+import axios from "axios";
 
 import {
   IconBrandGithub,
   IconBrandGoogle,
   IconBrandOnlyfans,
 } from "@tabler/icons-react";
+import { HTTP_BACKEND } from "../config";
+import Link from "next/link";
 
-export function AuthPage({ isSignIn }: { isSignIn: boolean }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+axios.defaults.withCredentials = true;
+
+export function AuthPage({ isSignUp }: { isSignUp: boolean }) {
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+
+  async function SignIn(email: string, password: string) {
+    //auth
+    try {
+      const res = await axios.post(`${HTTP_BACKEND}/signin`, {
+        data: {
+          email,
+          password
+        }
+      });
+      //if ok, create room
+      if (res.data.success) {
+        const roomRes = await axios.post(`${HTTP_BACKEND}/create-room`);
+        if (roomRes.data.slug) {
+          window.location.href = `/canvas/${roomRes.data.slug}`;
+        }
+      }
+      return res.data;
+    }
+    catch (error) {
+      console.error("Signin failed:", error);
+      return { error: "Authentication failed" };
+    }
+  }
+
+
+  async function SignUp(email: string, password: string, name: string) {
+    const res = await axios.post(`${HTTP_BACKEND}/signup`, {
+      data: {
+        email,
+        password,
+        name
+      }
+    })
+    if (res.data.success) {
+      const roomRes = await axios.post(`${HTTP_BACKEND}/create-room`);
+      if (roomRes.data.slug) {
+        window.location.href = `/canvas/${roomRes.data.slug}`;
+      }
+    }
+    return res.data;
+  }
 
 
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(email);
-    console.log(password);
-    console.log(name);
+    // console.log(email);
+    // console.log(password);
+    // console.log(name);
 
-    //submit the creds to /signup route from http backend etc
+    const res = isSignUp ? await SignUp(email, password, name) : await SignIn(email, password);
+    console.log("HAndle submit done", res);
   }
   return (
     <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black border-4 border-teal-500">
@@ -37,14 +85,19 @@ export function AuthPage({ isSignIn }: { isSignIn: boolean }) {
 
       <form className="my-8" onSubmit={handleSubmit}>
         <div className="mb-4 flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
-          <LabelInputContainer>
-            <Label htmlFor="firstname">First name</Label>
-            <Input id="firstname" placeholder="Tyler" type="text" value={name} onChange={(e) => { setName(e.target.value) }} />
-          </LabelInputContainer>
-          <LabelInputContainer>
-            <Label htmlFor="lastname">Last name</Label>
-            <Input id="lastname" placeholder="Durden" type="text" />
-          </LabelInputContainer>
+          {isSignUp && (
+            <>
+              <LabelInputContainer>
+                <Label htmlFor="firstname">First name</Label>
+                <Input id="firstname" placeholder="Tyler" type="text" value={name} onChange={(e) => { setName(e.target.value) }} />
+              </LabelInputContainer>
+              <LabelInputContainer>
+                <Label htmlFor="lastname">Last name</Label>
+                <Input id="lastname" placeholder="Durden" type="text" />
+              </LabelInputContainer>
+            </>
+          )}
+
         </div>
         <LabelInputContainer className="mb-4">
           <Label htmlFor="email">Email Address</Label>
@@ -67,44 +120,19 @@ export function AuthPage({ isSignIn }: { isSignIn: boolean }) {
           className="group/btn relative block h-10 w-full rounded-md bg-gradient-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
           type="submit"
         >
-          Sign up &rarr;
+          {isSignUp ? "Sign up" : "Login"}  &rarr;
           <BottomGradient />
         </button>
 
+        {isSignUp && <div className="text-white flex flex-row justify-center mt-7">Already have an account?
+
+          <Link href={'/signin'} className="cursor-pointer ml-1 underline">Login</Link>
+        </div>}
+
+
         <div className="my-8 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
 
-        {/* <div className="flex flex-col space-y-4">
-          <button
-            className="group/btn shadow-input relative flex h-10 w-full items-center justify-start space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-            type="submit"
-          >
-            <IconBrandGithub className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
-              GitHub
-            </span>
-            <BottomGradient />
-          </button>
-          <button
-            className="group/btn shadow-input relative flex h-10 w-full items-center justify-start space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-            type="submit"
-          >
-            <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
-              Google
-            </span>
-            <BottomGradient />
-          </button>
-          <button
-            className="group/btn shadow-input relative flex h-10 w-full items-center justify-start space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-            type="submit"
-          > */}
-        {/* <IconBrandOnlyfans className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
-              OnlyFans
-            </span>
-            <BottomGradient /> */}
-        {/* </button>
-        </div> */}
+
       </form>
     </div>
   );

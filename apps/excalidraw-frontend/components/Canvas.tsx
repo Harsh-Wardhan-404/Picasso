@@ -65,17 +65,30 @@ function Topbar({ selectedTool, setSelectedTool }: {
   selectedTool: Tool,
   setSelectedTool: (s: Tool) => void
 }) {
-  return <div style={{ position: "fixed", top: 10, left: 10 }}>
-    <div className="flex gap-2">
-      <IconButton activated={selectedTool === "pencil"} icon={<Pencil />} onClick={() => { setSelectedTool("pencil") }}></IconButton>
-      <IconButton activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon />} onClick={() => { setSelectedTool("rect") }}></IconButton>
-      <IconButton activated={selectedTool === "circle"} icon={<Circle />} onClick={() => { setSelectedTool("circle") }}></IconButton>
-      <IconButton activated={selectedTool === "line"} icon={<Line />} onClick={() => { setSelectedTool("line") }}></IconButton>
-      <IconButton activated={selectedTool === "zoomIn"} icon={<Plus />} onClick={() => { setSelectedTool("zoomIn") }}></IconButton>
-      <IconButton activated={selectedTool === "zoomOut"} icon={<Minus />} onClick={() => { setSelectedTool("zoomOut") }}></IconButton>
-      <IconButton activated={selectedTool === "pan"} icon={<Hand />} onClick={() => { setSelectedTool("pan") }}></IconButton>
+  return (
+    <>
+      <div style={{ position: "fixed", top: 10, left: 10 }}>
+        <div className="flex gap-2">
+          <IconButton activated={selectedTool === "pencil"} icon={<Pencil />} onClick={() => { setSelectedTool("pencil") }}></IconButton>
+          <IconButton activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon />} onClick={() => { setSelectedTool("rect") }}></IconButton>
+          <IconButton activated={selectedTool === "circle"} icon={<Circle />} onClick={() => { setSelectedTool("circle") }}></IconButton>
+          <IconButton activated={selectedTool === "line"} icon={<Line />} onClick={() => { setSelectedTool("line") }}></IconButton>
+          <IconButton activated={selectedTool === "zoomIn"} icon={<Plus />} onClick={() => { setSelectedTool("zoomIn") }}></IconButton>
+          <IconButton activated={selectedTool === "zoomOut"} icon={<Minus />} onClick={() => { setSelectedTool("zoomOut") }}></IconButton>
+          <IconButton activated={selectedTool === "pan"} icon={<Hand />} onClick={() => { setSelectedTool("pan") }}></IconButton>
 
-    </div>
+        </div>
 
-  </div>
+      </div>
+      <div style={{ position: "fixed", top: 10, right: 10 }}>
+        <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
+          <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+          <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl">
+            Join Room
+          </span>
+        </button>
+      </div>
+    </>
+  )
 }
+

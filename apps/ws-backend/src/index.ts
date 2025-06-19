@@ -2,6 +2,7 @@ import { WebSocket, WebSocketServer } from 'ws';
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_SECRET } from '@repo/backend-common/config';
 import { prismaClient } from "@repo/db/client";
+import parse from 'cookie-parser';
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -12,39 +13,56 @@ interface User {
 }
 const users: User[] = [];
 
-function checkUser(token: string): string | null {
+// function checkUser(token: string): string | null {
+//   try {
+//     const decoded = jwt.verify(token, JWT_SECRET);
+
+//     if (typeof decoded == "string") {
+//       return null;
+//     }
+
+//     if (!decoded || !decoded.userId) {
+//       return null;
+//     }
+
+//     return decoded.userId;
+//   } catch (e) {
+//     return null;
+//   }
+//   return null;
+// }
+
+function checkUserFromCookies(cookieHeader: string | undefined): string | null {
+  if (!cookieHeader) return null;
+
   try {
+    const cookies = parse(cookieHeader);
+    //@ts-ignore
+    const token = cookies.auth_token;
+
+    if (!token) return null;
+
     const decoded = jwt.verify(token, JWT_SECRET);
-
-    if (typeof decoded == "string") {
-      return null;
-    }
-
-    if (!decoded || !decoded.userId) {
+    if (typeof decoded === "string" || !decoded || !decoded.userId) {
       return null;
     }
 
     return decoded.userId;
   } catch (e) {
+    console.error("Cookie validation error:", e);
     return null;
   }
-  return null;
 }
 
 wss.on('connection', function connection(ws, request) {
-  const url = request.url;
-  if (!url) {
-    return;
-  }
-  const queryParams = new URLSearchParams(url.split('?')[1]);
-  const token = queryParams.get('token') || "";
-  const userId = checkUser(token);
+  const cookieHeader = request.headers.cookie;
+  const userId = checkUserFromCookies(cookieHeader);
 
   if (userId == null) {
-    ws.close()
+    console.log("Auth failed, closing connection")
+    ws.close(1008)
     return null;
   }
-
   users.push({
     userId,
     rooms: [],

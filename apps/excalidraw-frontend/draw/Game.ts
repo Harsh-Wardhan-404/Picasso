@@ -199,7 +199,7 @@ export class Game {
         this.ctx.restore();
     }
 
-    mouseDownHandler = (e) => {
+    mouseDownHandler = (e: MouseEvent) => {
         if (this.selectedTool === "pan") {
             this.isPanning = true;
             this.panStart.x = e.clientX;
@@ -218,7 +218,7 @@ export class Game {
             this.startY = transformed.y;
         }
     }
-    mouseUpHandler = (e) => {
+    mouseUpHandler = (e: MouseEvent) => {
         if (this.selectedTool === "pan") {
             this.isPanning = false;
             this.canvas.style.cursor = "grab";
@@ -391,7 +391,7 @@ export class Game {
         }
     }
 
-    mouseClickHandler = (e) => {
+    mouseClickHandler = (e: MouseEvent) => {
 
         if (this.selectedTool === "zoomIn") {
             const mouseX = e.clientX - this.canvas.offsetLeft;

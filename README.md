@@ -1,4 +1,7 @@
-Currently after you zoom out or in, and then draw the shape, the shapes are moving from their place
+Signup is in progres - currently you do get the userid in response, 
+do:
+1. Redirect
+2. Store session
 
 ### To DO
 1. Change the jwt token which we have hardcoded, file - (/Users/harshwardhansaindane/projects/Picasso/apps/excalidraw-frontend/components/RoomCanvas.tsx)

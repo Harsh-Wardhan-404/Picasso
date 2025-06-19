@@ -4,17 +4,23 @@ import { JWT_SECRET } from "@repo/backend-common/config";
 
 
 export function middleware(req: Request, res: Response, next: NextFunction) {
-    const token = req.headers["authorization"] ?? "";
+    const token = req.cookies.auth_token;
 
-    const decoded = jwt.verify(token, JWT_SECRET);
-
-    if (decoded) {
-        // @ts-ignore: TODO: Fix this
-        req.userId = decoded.userId;
-        next();
-    } else {
+    if (!token) {
         res.status(403).json({
-            message: "Unauthorized"
+            message: "Not authorized"
+        })
+        return;
+    }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        //@ts-ignore
+        req.userId = decoded.userId;
+
+        next();
+    } catch (e) {
+        res.status(403).json({
+            message: "Invalid token"
         })
     }
 }
