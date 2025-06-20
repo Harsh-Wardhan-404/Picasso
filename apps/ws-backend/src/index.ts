@@ -55,26 +55,53 @@ function checkUserFromCookies(cookieHeader: string | undefined): string | null {
 }
 
 wss.on('connection', function connection(ws, request) {
-  const cookieHeader = request.headers.cookie;
-  const userId = checkUserFromCookies(cookieHeader);
+  const url = new URL(request.url || '', 'http://localhost');
+  const roomId = url.searchParams.get('roomId');
 
-  if (userId == null) {
-    console.log("Auth failed, closing connection")
-    ws.close(1008)
+  const cookieHeader = request.headers.cookie;
+  let userId = checkUserFromCookies(cookieHeader);
+
+  if (userId === null && roomId) {
+    userId = `guest-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+    console.log(`Authenticated as guest via roomId: ${roomId}`);
+  }
+
+  if (userId === null) {
+    console.log("Auth failed, closing connection");
+    ws.close(1008);
     return null;
   }
-  users.push({
+
+
+  const user = {
     userId,
-    rooms: [],
+    rooms: roomId ? [roomId] : [],
     ws
-  })
+  };
+
+  users.push(user);
 
   ws.on('message', async function message(data) {
     let parsedData;
     if (typeof data !== "string") {
       parsedData = JSON.parse(data.toString());
+      console.log("Parsed data: ", parsedData.roomId);
     } else {
       parsedData = JSON.parse(data); // {type: "join-room", roomId: 1}
+    }
+
+    if (!roomId) {
+      console.error("No room ID provided");
+      return;
+    }
+
+    const roomExists = await prismaClient.room.findUnique({
+      where: { slug: roomId }
+    });
+
+    if (!roomExists) {
+      console.error(`Room with ID ${roomId} not found`);
+      return;
     }
 
     if (parsedData.type === "join_room") {

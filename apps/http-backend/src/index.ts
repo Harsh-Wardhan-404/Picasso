@@ -95,13 +95,29 @@ app.post("/create-room", middleware, async (req, res) => {
     try {
         //@ts-ignore
         const userId = req.userId;
-        const uniqueSlug = `room-${Math.random().toString(36).substring(2, 10)}`;
+        let uniqueSlug: string = "";
+        let isUnique = false;
+
+        while (!isUnique) {
+            // Generate a 6-digit room code
+            uniqueSlug = generateRoomCode();
+
+            // Check if it already exists
+            const existingRoom = await prismaClient.room.findFirst({
+                where: { slug: uniqueSlug }
+            });
+
+            if (!existingRoom) {
+                isUnique = true;
+            }
+        }
+
         const room = await prismaClient.room.create({
             data: {
                 slug: uniqueSlug,
                 adminId: userId
             }
-        })
+        });
 
         res.json({
             slug: uniqueSlug,
@@ -110,6 +126,33 @@ app.post("/create-room", middleware, async (req, res) => {
     } catch (e) {
         res.status(500).json({
             message: "Failed to create room"
+        })
+    }
+})
+
+function generateRoomCode(): string {
+    // Generate a number between 100000 and 999999 (6 digits)
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+app.get('/isRoom/:roomId', async (req, res) => {
+    try {
+        const roomId = req.params.roomId;
+        console.log(roomId);
+        const room = await prismaClient.room.findFirst({
+            where: {
+                slug: roomId
+            }
+        })
+        if (room) {
+            res.status(200).json({
+                success: true,
+                message: "Room exists"
+            })
+        }
+    } catch (e) {
+        res.status(404).json({
+            message: "Room doesn't exist"
         })
     }
 })

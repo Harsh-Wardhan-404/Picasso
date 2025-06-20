@@ -4,6 +4,7 @@ import { IconButton } from "./IconButton";
 import { Circle, Hand, Minus, Pencil, Plus, RectangleHorizontalIcon } from "lucide-react";
 import { Game } from "@/draw/Game";
 import Line from "./Icons/Line";
+import { Join } from "./Join";
 
 export type Tool = "circle" | "rect" | "pencil" | "line" | "zoomIn" | "zoomOut" | "pan";
 
@@ -12,6 +13,7 @@ export function Canvas({ roomId, socket }: { roomId: string, socket: WebSocket }
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedTool, setSelectedTool] = useState<Tool>("pan");
   const [game, setGame] = useState<Game>();
+  const [showJoin, setShowJoin] = useState<boolean>(false);
   useEffect(() => {
     if (canvasRef.current) {
       const g = new Game(canvasRef.current, roomId, socket)
@@ -57,13 +59,15 @@ export function Canvas({ roomId, socket }: { roomId: string, socket: WebSocket }
     overflow: "hidden"
   }}>
     <canvas style={{ cursor: selectedTool === "pan" ? "grab" : "default" }} ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
-    <Topbar selectedTool={selectedTool} setSelectedTool={setSelectedTool} />
+    {showJoin && <Join onClose={() => setShowJoin(false)} socket={socket} />}
+    <Topbar selectedTool={selectedTool} setSelectedTool={setSelectedTool} setShowJoin={setShowJoin} />
   </div>
 }
 
-function Topbar({ selectedTool, setSelectedTool }: {
+function Topbar({ selectedTool, setSelectedTool, setShowJoin }: {
   selectedTool: Tool,
-  setSelectedTool: (s: Tool) => void
+  setSelectedTool: (s: Tool) => void,
+  setShowJoin: (s: boolean) => void
 }) {
   return (
     <>
@@ -83,7 +87,7 @@ function Topbar({ selectedTool, setSelectedTool }: {
       <div style={{ position: "fixed", top: 10, right: 10 }}>
         <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
           <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-          <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl">
+          <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl" onClick={() => setShowJoin(true)}>
             Join Room
           </span>
         </button>

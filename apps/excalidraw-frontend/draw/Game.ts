@@ -83,6 +83,15 @@ export class Game {
         this.init();
         this.initHandlers();
         this.initMouseHandlers();
+
+        this.socket.onclose = (event) => {
+            console.warn("WebSocket closed:", event.reason);
+            // setTimeout(() => this.reconnectWebSocket(), 1000);
+        };
+
+        this.socket.onerror = (error) => {
+            console.error("WebSocket error:", error);
+        };
     }
 
     destroy() {
@@ -272,15 +281,19 @@ export class Game {
             }
 
             this.existingShapes.push(shape);
-
-            this.socket.send(JSON.stringify({
-                type: "chat",
-                message: JSON.stringify({
-                    shape
-                }),
-                roomId: this.roomId
-            }));
-            this.currentPath = [];
+            if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+                this.socket.send(JSON.stringify({
+                    type: "chat",
+                    message: JSON.stringify({
+                        shape
+                    }),
+                    roomId: this.roomId
+                }));
+                this.currentPath = [];
+            } else {
+                console.warn("Cant send draws, ws not connected");
+                // this.reconnectWs();
+            }
         }
 
     }
@@ -485,6 +498,7 @@ export class Game {
 
             }
         }
+
 
         this.textInput.onblur = finishEditing;
         this.textInput.onkeydown = (e) => {

@@ -1,7 +1,7 @@
 Signup is in progres - currently you do get the userid in response, 
 do:
-1. Redirect
-2. Store session
+1. Add join room logic
+2. 
 
 ### To DO
 1. Change the jwt token which we have hardcoded, file - (/Users/harshwardhansaindane/projects/Picasso/apps/excalidraw-frontend/components/RoomCanvas.tsx)
