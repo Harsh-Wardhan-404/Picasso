@@ -9,7 +9,8 @@ async function getChats(roomId: string) {
 
 export async function ChatRoom({id}: {
     id: string
-}) {
+}): Promise<JSX.Element> {
     const messages = await getChats(id);
+    console.log("CHATROOM.tsx - messages from the room", messages);
     return <ChatRoomClient id={id} messages={messages} />
 }

@@ -165,11 +165,25 @@ app.get('/isRoom/:roomId', async (req, res) => {
 
 app.get("/chats/:roomId", async (req, res) => {
     try {
-        const roomId = Number(req.params.roomId);
-        console.log(req.params.roomId);
+        const roomSlug = req.params.roomId;
+        console.log("Getting chats for room slug:", roomSlug);
+        const room = await prismaClient.room.findFirst({
+            where: {
+                slug: roomSlug
+            }
+        });
+
+        if(!room){
+            console.log("Room not found for slug: ",roomSlug);
+            res.json({messages: []});
+            return;
+        }
+
+        console.log("Found room ID:", room.id, "for slug:", roomSlug);
+
         const messages = await prismaClient.chat.findMany({
             where: {
-                roomId: roomId
+                roomId: room.id
             },
             orderBy: {
                 id: "desc"
@@ -177,11 +191,13 @@ app.get("/chats/:roomId", async (req, res) => {
             take: 1000
         });
 
+        console.log("Found", messages.length, "messages for room", room.id);
+
         res.json({
             messages
         })
     } catch (e) {
-        console.log(e);
+        console.log("Error getting chats:", e);
         res.json({
             messages: []
         })
