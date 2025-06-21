@@ -13,24 +13,24 @@ interface User {
 }
 const users: User[] = [];
 
-// function checkUser(token: string): string | null {
-//   try {
-//     const decoded = jwt.verify(token, JWT_SECRET);
+function checkUser(token: string): string | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
 
-//     if (typeof decoded == "string") {
-//       return null;
-//     }
+    if (typeof decoded == "string") {
+      return null;
+    }
 
-//     if (!decoded || !decoded.userId) {
-//       return null;
-//     }
+    if (!decoded || !decoded.userId) {
+      return null;
+    }
 
-//     return decoded.userId;
-//   } catch (e) {
-//     return null;
-//   }
-//   return null;
-// }
+    return decoded.userId;
+  } catch (e) {
+    return null;
+  }
+  return null;
+}
 
 function checkUserFromCookies(cookieHeader: string | undefined): string | null {
   if (!cookieHeader) return null;
@@ -55,31 +55,24 @@ function checkUserFromCookies(cookieHeader: string | undefined): string | null {
 }
 
 wss.on('connection', function connection(ws, request) {
-  const url = new URL(request.url || '', 'http://localhost');
-  const roomId = url.searchParams.get('roomId');
-
-  const cookieHeader = request.headers.cookie;
-  let userId = checkUserFromCookies(cookieHeader);
-
-  if (userId === null && roomId) {
-    userId = `guest-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
-    console.log(`Authenticated as guest via roomId: ${roomId}`);
+  const url = request.url;
+  if (!url) {
+    return;
   }
+  const queryParams = new URLSearchParams(url.split('?')[1]);
+  const token = queryParams.get('token') || "";
+  const userId = checkUser(token);
 
-  if (userId === null) {
-    console.log("Auth failed, closing connection");
-    ws.close(1008);
+  if (userId == null) {
+    ws.close()
     return null;
   }
 
-
-  const user = {
+  users.push({
     userId,
-    rooms: roomId ? [roomId] : [],
+    rooms: [],
     ws
-  };
-
-  users.push(user);
+  })
 
   ws.on('message', async function message(data) {
     let parsedData;
@@ -90,17 +83,12 @@ wss.on('connection', function connection(ws, request) {
       parsedData = JSON.parse(data); // {type: "join-room", roomId: 1}
     }
 
-    if (!roomId) {
-      console.error("No room ID provided");
-      return;
-    }
-
     const roomExists = await prismaClient.room.findUnique({
-      where: { slug: roomId }
+      where: { slug: parsedData.roomId }
     });
 
     if (!roomExists) {
-      console.error(`Room with ID ${roomId} not found`);
+      console.error(`Room with ID ${parsedData.roomId} not found`);
       return;
     }
 
@@ -119,23 +107,31 @@ wss.on('connection', function connection(ws, request) {
 
     if (parsedData.type === "chat") {
       console.log("Parsed Data: ", parsedData.roomId);
-      const roomId = parsedData.roomId;
+      const roomSlug = parsedData.roomId;
       const message = parsedData.message;
+
+      const room = await prismaClient.room.findUnique({
+        where: { slug: roomSlug }
+      });
+      if (!room) {
+        console.error(`Room with ID ${roomSlug} not found`);
+        return;
+      }
 
       await prismaClient.chat.create({
         data: {
-          roomId: Number(roomId),
+          roomId: room.id,
           message,
           userId
         }
       });
 
       users.forEach(user => {
-        if (user.rooms.includes(roomId)) {
+        if (user.rooms.includes(roomSlug)) {
           user.ws.send(JSON.stringify({
             type: "chat",
             message: message,
-            roomId
+            roomId: roomSlug
           }))
         }
       })

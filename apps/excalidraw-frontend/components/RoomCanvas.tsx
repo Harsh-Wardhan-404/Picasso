@@ -9,7 +9,10 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(`${WS_URL}?roomId=${roomId}`);
+    const token = getAuthToken();
+    // const ws = new WebSocket(`${WS_URL}?token=${token}` : WS_URL);
+    const wsUrl = token ? `${WS_URL}?token=${token}` : WS_URL;
+    const ws = new WebSocket(wsUrl);
     ws.onopen = () => {
       setSocket(ws);
       ws.send(JSON.stringify({
@@ -18,6 +21,10 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
       }))
     }
   }, [])
+
+  function getAuthToken() {
+    return localStorage.getItem('auth_token');
+  }
 
 
   if (!socket) {

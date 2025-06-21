@@ -86,7 +86,8 @@ app.post("/signin", async (req, res) => {
 
     res.json({
         success: true,
-        user: { id: user.id, email: user.email, name: user.name }
+        user: { id: user.id, email: user.email, name: user.name },
+        token: token
     });
 });
 
@@ -149,10 +150,15 @@ app.get('/isRoom/:roomId', async (req, res) => {
                 success: true,
                 message: "Room exists"
             })
+        } else {
+            res.status(404).json({
+                success: false,
+                message: "Room doesn't exist"
+            })
         }
     } catch (e) {
-        res.status(404).json({
-            message: "Room doesn't exist"
+        res.status(500).json({
+            message: "Server error"
         })
     }
 })

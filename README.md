@@ -1,7 +1,6 @@
 Signup is in progres - currently you do get the userid in response, 
 do:
-1. Add join room logic
-2. 
+1. Not able to draw, check ws error in console
 
 ### To DO
 1. Change the jwt token which we have hardcoded, file - (/Users/harshwardhansaindane/projects/Picasso/apps/excalidraw-frontend/components/RoomCanvas.tsx)

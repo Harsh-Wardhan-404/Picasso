@@ -31,6 +31,8 @@ export function AuthPage({ isSignUp }: { isSignUp: boolean }) {
       });
       //if ok, create room
       if (res.data.success) {
+        console.log("AUTH TOKEN RETURNED FROM BE: ", res.data.token);
+        localStorage.setItem('auth_token', res.data.token);
         const roomRes = await axios.post(`${HTTP_BACKEND}/create-room`);
         if (roomRes.data.slug) {
           window.location.href = `/canvas/${roomRes.data.slug}`;
