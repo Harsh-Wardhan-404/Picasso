@@ -24,7 +24,7 @@ export function NavbarDemo() {
     },
     {
       name: "Contact",
-      link: "#contact",
+      link: "https://x.com/harsh_wdym",
     },
   ];
 
@@ -39,7 +39,7 @@ export function NavbarDemo() {
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
             {/* <NavbarButton variant="secondary">Login</NavbarButton> */}
-            <NavbarButton variant="primary" href="/signup">Login</NavbarButton>
+            <NavbarButton variant="primary" href="/signup">Signup</NavbarButton>
           </div>
         </NavBody>
 
@@ -72,8 +72,9 @@ export function NavbarDemo() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"
+                href="/signup"
               >
-                Login
+                Signup
               </NavbarButton>
             </div>
           </MobileNavMenu>

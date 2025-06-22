@@ -10,6 +10,10 @@
     0px 0px 0px 1px rgba(25, 28, 33, 0.08);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 
 :root {
   --background: #ffffff;

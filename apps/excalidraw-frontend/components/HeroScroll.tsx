@@ -9,9 +9,9 @@ export function HeroScrollDemo() {
         titleComponent={
           <>
             <h1 className="text-4xl font-semibold text-black dark:text-white">
-            Think it. Draw it.<br />
-              <span className="text-4xl md:text-[6rem] font-bold mt-1 leading-none">
-              Share your vision.
+              Draw, Collaborate, Share<br />
+              <span className="text-4xl md:text-[5rem] font-bold mt-1 leading-none">
+                Where Ideas take shape
               </span>
             </h1>
           </>
