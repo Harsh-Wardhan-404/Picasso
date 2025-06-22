@@ -24,8 +24,10 @@ export default function Home() {
       <div className="-mt-20">
         <HeroScrollDemo />
       </div>
+      <div className='my-20'>
+        <Demo />
+      </div>
       <div id="features" className='pt-20'><GlowingEffectDemoSecond /></div>
-      {/* <Demo /> */}
       <GlobeDemo />
 
       {/* Footer */}

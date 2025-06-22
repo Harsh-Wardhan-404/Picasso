@@ -239,8 +239,8 @@ export const NavbarLogo = () => {
       <img
         src="/logo4.png"
         alt="logo"
-        width={80}
-        height={80}
+        width={120}
+        height={120}
         className="object-contain"
       />
       {/* <span className="font-semibold text-black dark:text-white">Picasso</span> */}
