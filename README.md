@@ -28,7 +28,7 @@
 ## 🎬 Demo
 
 <p align="center">
-  <img src="https://github.com/Harsh-Wardhan-404/Picasso/raw/main/demo.gif" alt="Picasso Demo" width="700">
+  <img src="https://github.com/Harsh-Wardhan-404/Picasso/blob/main/apps/excalidraw-frontend/public/picasso_demo.gif" alt="Picasso Demo" width="700">
 </p>
 
 Check out the [full demo video](https://github.com/Harsh-Wardhan-404/Picasso/raw/main/apps/excalidraw-frontend/public/picasso_demo.mp4) for a walkthrough of all features.
