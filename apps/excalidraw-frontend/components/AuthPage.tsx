@@ -1,15 +1,10 @@
 "use client"
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { cn } from "@/libs/utils"
 import axios from "axios";
 
-import {
-  IconBrandGithub,
-  IconBrandGoogle,
-  IconBrandOnlyfans,
-} from "@tabler/icons-react";
 import { HTTP_BACKEND } from "../config";
 import Link from "next/link";
 

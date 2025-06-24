@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Github, PenTool, Share2, Users, Laptop, Twitter, Mail, Heart } from "lucide-react";
+import { Sparkles, Github, Twitter, Mail, Heart } from "lucide-react";
 
 const Footer = () => {
     // Footer links organized by section

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Hand, Lock, Pencil, Plus, Search, Settings, Share2, Sparkles, Users } from "lucide-react";
+import { Hand, Pencil, Plus, Share2, Users } from "lucide-react";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 export function GlowingEffectDemoSecond() {

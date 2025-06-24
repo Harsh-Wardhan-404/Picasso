@@ -23,11 +23,10 @@ export function Canvas({ roomId, socket }: { roomId: string, socket: WebSocket }
         g.destroy();
       }
     }
-  }, [canvasRef]);
+  }, [canvasRef, roomId, socket]);
 
   useEffect(() => {
     game?.setTool(selectedTool);
-    //@ts-ignore
   }, [selectedTool, game]);
 
   useEffect(() => {

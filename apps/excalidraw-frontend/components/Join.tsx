@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { X, Users, ArrowRight } from 'lucide-react';
 import axios from 'axios';
-import { HTTP_BACKEND, WS_URL } from '@/config';
+import { HTTP_BACKEND } from '@/config';
 
 interface JoinProps {
     onClose: () => void;
@@ -120,7 +120,7 @@ export function Join({ onClose, socket }: JoinProps) {
                 {/* Footer */}
                 <div className="text-center mt-6 pt-6 border-t border-gray-700">
                     <p className="text-gray-400 text-sm">
-                        Don't have a room code?{" "}
+                        Don&apos;t have a room code?{" "}
                         <button className="text-purple-400 hover:text-purple-300 transition-colors font-medium">
                             Create a new room
                         </button>

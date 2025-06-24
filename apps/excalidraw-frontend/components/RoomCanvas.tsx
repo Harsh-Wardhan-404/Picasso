@@ -1,7 +1,7 @@
 "use client";
 
 import { WS_URL } from "@/config";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 
 
@@ -20,7 +20,7 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
         roomId
       }))
     }
-  }, [])
+  }, [roomId])
 
   function getAuthToken() {
     return localStorage.getItem('auth_token');
